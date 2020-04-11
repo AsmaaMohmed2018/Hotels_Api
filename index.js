@@ -1,7 +1,9 @@
+
 const express = require('express');
 const axios = require('axios');
 const app = express();
 let matchedHotels=[];
+let sortedHotels=[];
 let returnedHotels = [{
     "id": "c9200b80-2218-4eb4-afab-cdfb51fd292a",
     "name": "quo eum perferendis",
@@ -79,136 +81,125 @@ let returnedHotels = [{
     "rating": 0.36616830811708034,
     "description": "Nostrum ratione dolor magni et ipsa doloribus. Quo et rem est. Omnis quis ad blanditiis aut quis sed. Aut quod exercitationem vero. Est amet aut ut omnis. Ut nihil eum."
     }];
-//const searchRouter =  require('./routes/searchRoute');
-//const filterRouter =  require('./routes/filterRoute');
 
-
-
+//node server listen ot localhost on port 3000
 
 app.listen(3000,(err)=>{
     if (!err) console.log('server started on port 3000')
     else console.log(err)
-})
+});
+
+//search by name route
 
 app.get('/hotels/search/name/:id',(req,res)=>{
-    matchedHotels=[];
-    returnedHotels.map((hotel)=>{
-        console.log(hotel.name);
-        // console.log(req.params.id);
-        //console.log(typeof(hotel.name));
-        if(hotel.name.includes(req.params.id)){
-            //res.send(hotel);
-            matchedHotels.push(hotel)
-            console.log('ok');
-            // console.log(matchedHotels);
-        }
-        else {console.log('No matches')}
+    axios({method:'get',           
+            url:'http://fake-hotel-api.herokuapp.com/api/hotels',
+            responseType:'json'}).then((res)=>{
+                matchedHotels=[];
+                res.data.map((hotel)=>{
+                console.log(hotel.name);
+                if(hotel.name.includes(req.params.id)){
+                    matchedHotels.push(hotel)
+                    console.log('ok');
+                }
+                else 
+                    console.log('No matches')
+                }) 
+            }).then(()=>{
+                console.log(matchedHotels.length);
+                res.send(matchedHotels)
+            });
+});
     
-    
-    })
-    // axios({method:'get',
-    //     url:'http://fake-hotel-api.herokuapp.com/api/hotels',
-    //     responseType:'json'}).then((res)=>{
-    //     //console.log(typeof(res.data));
-        
-    //     res.data.map((hotel)=>{
-    //         //console.log(hotel.name);
-    //         // console.log(req.params.id);
-    //         //console.log(typeof(hotel.name));
-    //         if(hotel.name.includes(req.params.id)){
-    //             //res.send(hotel);
-    //             matchedHotels.push(hotel)
-    //             console.log('ok');
-    //             console.log(matchedHotels);
-                    
-                    
-
-    //         }
-    //         else {console.log('no')}
-        
-    //     })
-    //     //console.log(res.data);
-
-        
-    // }).catch((err)=>{
-    //     console.log(err)
-    // })
-    res.send(matchedHotels);
-})
+//search By City route
 
 app.get('/hotels/search/city/:id',(req,res)=>{
-    matchedHotels=[];
-    returnedHotels.map((hotel)=>{
-        if(hotel.city.toLowerCase().includes(req.params.id)){
-            matchedHotels.push(hotel);
-        }
-        else {console.log('No matches')};
-    })
+    axios({method:'get',
+        url:'http://fake-hotel-api.herokuapp.com/api/hotels',
+        responseType:'json'}).then((res)=>{
+            matchedHotels=[];
+            res.data.map((hotel)=>{
+            if(hotel.city.toLowerCase().includes(req.params.id)){
+                matchedHotels.push(hotel);
+            }
+            else console.log('No matches');
+            })
+        }).then(()=>{
+            console.log(matchedHotels.length)
+            res.send(matchedHotels);
+        });    
+});
 
-    res.send(matchedHotels);
-    
-})
+//search By price Route
 
 app.get('/hotels/search/price',(req,res)=>{
-    matchedHotels=[];
-    returnedHotels.map((hotel)=>{
-        if((hotel.price >= req.query.x) && (hotel.price <= req.query.y) ){
-            matchedHotels.push(hotel);
-        }
-        else {console.log('No matches')};
-    })
+    axios({method:'get',
+        url:'http://fake-hotel-api.herokuapp.com/api/hotels',
+        responseType:'json'}).then((res)=>{
+            matchedHotels=[];
+            res.data.map((hotel)=>{
+            if((hotel.price >= req.query.x) && (hotel.price<= req.query.y)){
+                matchedHotels.push(hotel);
+            }
+            else console.log('No matches');
+            })
+        }).then(()=>{
+            console.log(matchedHotels.length)
+            res.send(matchedHotels)
+        });
+});
 
-    res.send(matchedHotels);
-    
-})
+//search By Date Route
 
 app.get('/hotels/search/date/:id',(req,res)=>{
-    matchedHotels=[];
-    const dateAr = req.params.id.split(':');
-    const fromA = dateAr[0].split('-');
-    const toA = dateAr[1].split('-');
-    console.log(toA)
-    console.log(fromA)
+    axios({method:'get',
+        url:'http://fake-hotel-api.herokuapp.com/api/hotels',
+        responseType:'json'}).then((res)=>{
+            matchedHotels=[];
+            const dateAr = req.params.id.split(':');
+            const fromA = dateAr[0].split('-');
+            const toA = dateAr[1].split('-');
+            console.log(toA)
+            console.log(fromA)
+            const from1 = (new Date(fromA[2],parseInt(fromA[1])-1,fromA[0]));
+            const to1 = new Date(toA[2],parseInt(toA[1])-1,toA[0]);    
+            res.data.map((hotel)=>{
+                const from2 = new Date (hotel.date_start);
+                const to2 = new Date (hotel.date_end);
+                if((from2 <= from1) && (to2 >= to1) ){
+                    matchedHotels.push(hotel);
+                }
+                else console.log('No matches');
+            })
+        }).then(()=>{
+        console.log(matchedHotels.length);
+        res.send(matchedHotels);
+        });
+});
 
-    const from1 = (new Date(fromA[2],parseInt(fromA[1])-1,fromA[0]));
-    const to1 = new Date(toA[2],parseInt(toA[1])-1,toA[0]);    
-    //const from1 = new Date(dateAr[0]);
-    //const to1 = new Date(dateAr[1]);
+//sort By Name route
 
-    returnedHotels.map((hotel)=>{
-        const from2 = new Date (hotel.date_start);
-        const to2 = new Date (hotel.date_end);
-        console.log(from1);
-        console.log(from2);
-        console.log(to1);
-        console.log(to2);
-
-        if((from2 <= from1) && (to2 >= to1) ){
-            console.log('ok')
-            matchedHotels.push(hotel);
-        }
-        else {console.log('No matches')};
-    })
-
-    res.send(matchedHotels);
-    
-})
-
-
-
-app.get('/hotels/sort/name',(req,res)=>{
+app.use('/hotels/sort/name',(req,res)=>{
     function sort_by_key(array, key) {
 
         return array.sort(function(a, b) {
     
         var x = a[key]; var y = b[key];
             return ((x < y) ? -1 : ((x > y) ? 1 : 0));
-        });
-    }
-    returnedHotels = sort_by_key(returnedHotels,'name');
-    res.send(returnedHotels);
-    
-})
+        })
+    } 
+    axios({method:'get',
+    url:'http://fake-hotel-api.herokuapp.com/api/hotels',
+    responseType:'json'}).then((res)=>{ 
+        sortedHotels=res.data;
+        sortedHotels=sort_by_key(sortedHotels,'name');
+    }).then(()=>{
+        res.send(sortedHotels);
+    });
+});
+
+
+//sort by Price route
 
 app.get('/hotels/sort/price',(req,res)=>{
     function sort_by_key(array, key) {
@@ -219,8 +210,14 @@ app.get('/hotels/sort/price',(req,res)=>{
             return ((x < y) ? -1 : ((x > y) ? 1 : 0));
         });
     }
-    returnedHotels = sort_by_key(returnedHotels,'price');
-    res.send(returnedHotels);
-    
-})
+
+    axios({method:'get',
+    url:'http://fake-hotel-api.herokuapp.com/api/hotels',
+    responseType:'json'}).then((res)=>{ 
+        sortedHotels=res.data;
+        sortedHotels=sort_by_key(sortedHotels,'price');
+    }).then(()=>{
+        res.send(sortedHotels);
+    });
+});
 
